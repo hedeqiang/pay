@@ -1,14 +1,45 @@
-name: Linter
+name: Coding Style
 on: [push, pull_request]
 
 jobs:
   php_cs_fixer:
     name: php_cs_fixer
-    runs-on: ubuntu-latest
+    runs-on: "${{ matrix.os }}"
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [ubuntu-latest]
+        php-version:
+          - 8.0
     steps:
       - name: Checkout Code
-        uses: actions/checkout@master
+        uses: actions/checkout@v2
+      - name: PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
       - name: Install Dependencies
         run: composer install --no-progress
       - name: Run PHP-CS-Fixer
-        run: ./vendor/bin/php-cs-fixer fix --dry-run --diff 1>&2
+        run: composer cs-fix
+  php_stan:
+    name: php_stan
+    runs-on: "${{ matrix.os }}"
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [ ubuntu-latest ]
+        php-version:
+          - 7.3
+          - 7.4
+    steps:
+      -   name: Checkout Code
+          uses: actions/checkout@v2
+      -   name: PHP
+          uses: shivammathur/setup-php@v2
+          with:
+            php-version: ${{ matrix.php-version }}
+      -   name: Install Dependencies
+          run: composer install --no-progress
+      -   name: Run PHP-Stan
+          run: composer analyse
